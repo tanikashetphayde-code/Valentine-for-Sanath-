@@ -24,6 +24,8 @@ html, body {
   margin: 0 auto;
   height: 100vh;
   box-sizing: border-box;
+  position: relative;
+  z-index: 2;
 }
 
 h1 {
@@ -68,6 +70,7 @@ button:hover {
   min-height: 90px;
 }
 
+/* Background Floating Hearts */
 .balloon-container {
   position: fixed;
   pointer-events: none;
@@ -75,7 +78,7 @@ button:hover {
   height: 100%;
   top: 0;
   left: 0;
-  z-index: 0;
+  z-index: 1;
 }
 
 .heart {
@@ -84,7 +87,7 @@ button:hover {
   height: 30px;
   background: #d6336c;
   transform: rotate(-45deg);
-  opacity: 0.7;
+  opacity: 0.4;
   animation: float 6s ease-in-out infinite;
 }
 
@@ -98,20 +101,27 @@ button:hover {
   border-radius: 50%;
 }
 
-.heart:before {
-  top: 0;
-  left: 15px;
-}
-
-.heart:after {
-  top: 15px;
-  left: 0;
-}
+.heart:before { top: 0; left: 15px; }
+.heart:after { top: 15px; left: 0; }
 
 @keyframes float {
   0% { transform: translateY(0) rotate(-45deg); }
   50% { transform: translateY(-15px) rotate(-45deg); }
   100% { transform: translateY(0) rotate(-45deg); }
+}
+
+/* Burst Heart Animation */
+.burst-heart {
+  position: fixed;
+  font-size: 24px;
+  animation: burst 1.2s ease-out forwards;
+  pointer-events: none;
+  z-index: 999;
+}
+
+@keyframes burst {
+  0% { transform: scale(0.2); opacity: 1; }
+  100% { transform: translate(var(--x), var(--y)) scale(1.5); opacity: 0; }
 }
 </style>
 </head>
@@ -132,12 +142,15 @@ button:hover {
 
 <div class="balloon-container"></div>
 
+<audio id="cheerSound" src="cheer.mp3"></audio>
+
 <script>
 const title = document.getElementById("title");
 const subtitle = document.getElementById("subtitle");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const message = document.getElementById("message");
+const cheerSound = document.getElementById("cheerSound");
 
 let step = 0;
 
@@ -162,7 +175,48 @@ const steps = [
   }
 ];
 
-function nextStep(choice) {
+function heartBurst() {
+  for (let i = 0; i < 25; i++) {
+    const heart = document.createElement("div");
+    heart.className = "burst-heart";
+    heart.innerText = "💖";
+    heart.style.left = "50%";
+    heart.style.top = "50%";
+    heart.style.setProperty("--x", (Math.random() * 400 - 200) + "px");
+    heart.style.setProperty("--y", (Math.random() * 400 - 200) + "px");
+    document.body.appendChild(heart);
+
+    setTimeout(() => heart.remove(), 1200);
+  }
+}
+
+function revealFinal() {
+  // Play sound (wrapped in a try-catch in case the file is missing)
+  try {
+    cheerSound.play();
+  } catch (e) {
+    console.log("Audio file missing or blocked");
+  }
+
+  heartBurst();
+
+  title.innerText = "Will you be my Valentine? 💖";
+  subtitle.innerText = "";
+  yesBtn.style.display = "none";
+  noBtn.style.display = "none";
+
+  message.innerHTML = `
+    <strong>HURRAY!!! 🎉</strong><br><br>
+    I knew it 😘😘😘😘😘<br><br>
+    Endless kisses just for you 💋💋💋💋💋<br><br>
+    Just you and me.<br>
+    <strong>7:00 PM</strong><br>
+    <strong>THE ROSE GARDEN HOTEL</strong><br><br>
+    Can’t wait to be your Valentine 🤍
+  `;
+}
+
+function nextStep() {
   step++;
   if (step < steps.length) {
     title.innerText = steps[step].title;
@@ -174,21 +228,6 @@ function nextStep(choice) {
   }
 }
 
-function revealFinal() {
-  title.innerText = "My answer is you 🤍";
-  subtitle.innerText = "";
-  yesBtn.style.display = "none";
-  noBtn.style.display = "none";
-  message.innerHTML = `
-    Will you be my Valentine, Sanath? 🌹<br><br>
-    Just you and me.<br>
-    <strong>7:00 PM</strong><br>
-    <strong>The Rose Garden Hotel</strong><br><br>
-    I already saved the date… 💖
-  `;
-}
-
-// Move NO button
 function moveButtonAway() {
   const maxX = window.innerWidth - noBtn.offsetWidth;
   const maxY = window.innerHeight - noBtn.offsetHeight;
@@ -203,9 +242,9 @@ noBtn.addEventListener("touchstart", e => {
   moveButtonAway();
 }, { passive: false });
 
-yesBtn.addEventListener("click", () => nextStep("yes"));
+yesBtn.addEventListener("click", nextStep);
 
-// Hearts
+// Background hearts
 const balloonContainer = document.querySelector(".balloon-container");
 for (let i = 0; i < 14; i++) {
   const heart = document.createElement("div");
