@@ -28,17 +28,8 @@ html, body {
   z-index: 2;
 }
 
-h1 {
-  color: #d6336c;
-  font-size: 2em;
-  margin-bottom: 20px;
-}
-
-p {
-  color: #83003b;
-  font-size: 1.1em;
-  margin-bottom: 30px;
-}
+h1 { color: #d6336c; font-size: 2em; margin-bottom: 20px; }
+p { color: #83003b; font-size: 1.1em; margin-bottom: 30px; }
 
 .btns {
   display: flex;
@@ -59,66 +50,40 @@ button {
   min-width: 110px;
 }
 
-button:hover {
-  background: #b23059;
-}
+#noBtn { position: relative; }
 
-#message {
-  margin-top: 40px;
-  font-size: 1.2em;
-  color: #83003b;
-  min-height: 90px;
-}
+#message { margin-top: 40px; font-size: 1.2em; color: #83003b; }
 
-/* Background Floating Hearts */
+/* Background Hearts */
 .balloon-container {
   position: fixed;
   pointer-events: none;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  z-index: 1;
+  width: 100%; height: 100%;
+  top: 0; left: 0; z-index: 1;
 }
-
 .heart {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  background: #d6336c;
-  transform: rotate(-45deg);
-  opacity: 0.4;
-  animation: float 6s ease-in-out infinite;
+  position: absolute; width: 30px; height: 30px;
+  background: #d6336c; transform: rotate(-45deg);
+  opacity: 0.3; animation: float 6s ease-in-out infinite;
 }
-
-.heart:before,
-.heart:after {
-  content: "";
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  background: #d6336c;
-  border-radius: 50%;
+.heart:before, .heart:after {
+  content: ""; position: absolute; width: 30px; height: 30px;
+  background: #d6336c; border-radius: 50%;
 }
-
 .heart:before { top: 0; left: 15px; }
 .heart:after { top: 15px; left: 0; }
 
 @keyframes float {
-  0% { transform: translateY(0) rotate(-45deg); }
+  0%, 100% { transform: translateY(0) rotate(-45deg); }
   50% { transform: translateY(-15px) rotate(-45deg); }
-  100% { transform: translateY(0) rotate(-45deg); }
 }
 
-/* Burst Heart Animation */
+/* Celebration Burst */
 .burst-heart {
-  position: fixed;
-  font-size: 24px;
+  position: fixed; font-size: 24px;
   animation: burst 1.2s ease-out forwards;
-  pointer-events: none;
-  z-index: 999;
+  pointer-events: none; z-index: 999;
 }
-
 @keyframes burst {
   0% { transform: scale(0.2); opacity: 1; }
   100% { transform: translate(var(--x), var(--y)) scale(1.5); opacity: 0; }
@@ -141,7 +106,6 @@ button:hover {
 </div>
 
 <div class="balloon-container"></div>
-
 <audio id="cheerSound" src="cheer.mp3"></audio>
 
 <script>
@@ -153,82 +117,73 @@ const message = document.getElementById("message");
 const cheerSound = document.getElementById("cheerSound");
 
 let step = 0;
+let moveEnabled = false; // Only moves at the final proposal
 
 const steps = [
-  {
-    title: "Level 1 💫",
-    text: "Pick one thing that always makes life better:",
-    yes: "Quiet time together",
-    no: "Laughing at silly things"
-  },
-  {
-    title: "Level 2 ❤️",
-    text: "What matters more to you?",
-    yes: "Grand surprises",
-    no: "Time spent together"
-  },
-  {
-    title: "Final Level 💘",
-    text: "One honest question… ready?",
-    yes: "Yes",
-    no: "No 😌"
-  }
+  { title: "Level 1 💫", text: "Pick one thing that always makes life better:", yes: "Quiet time", no: "Silly jokes" },
+  { title: "Level 2 ❤️", text: "What matters more to you?", yes: "Surprises", no: "Quality time" },
+  { title: "Final Level 💘", text: "One honest question… ready?", yes: "Yes!", no: "No 😌" }
 ];
 
-function heartBurst() {
-  for (let i = 0; i < 25; i++) {
-    const heart = document.createElement("div");
-    heart.className = "burst-heart";
-    heart.innerText = "💖";
-    heart.style.left = "50%";
-    heart.style.top = "50%";
-    heart.style.setProperty("--x", (Math.random() * 400 - 200) + "px");
-    heart.style.setProperty("--y", (Math.random() * 400 - 200) + "px");
-    document.body.appendChild(heart);
-
-    setTimeout(() => heart.remove(), 1200);
+function nextStep() {
+  if (step < steps.length) {
+    title.innerText = steps[step].title;
+    subtitle.innerText = steps[step].text;
+    yesBtn.innerText = steps[step].yes;
+    noBtn.innerText = steps[step].no;
+    step++;
+  } else {
+    askValentine();
   }
 }
 
-function revealFinal() {
-  // Play sound (wrapped in a try-catch in case the file is missing)
-  try {
-    cheerSound.play();
-  } catch (e) {
-    console.log("Audio file missing or blocked");
-  }
+// THE PROPOSAL - Where the "No" button starts moving
+function askValentine() {
+  title.innerText = "Will you be my Valentine? 💖";
+  subtitle.innerText = "There is no escaping this one!";
+  yesBtn.innerText = "Yes! 😍";
+  noBtn.innerText = "No ❌";
+  moveEnabled = true; // Enable the "No" button movement
+  
+  // Change Yes button click to the final celebration
+  yesBtn.removeEventListener("click", nextStep);
+  yesBtn.addEventListener("click", revealFinal);
+}
 
+function revealFinal() {
+  moveEnabled = false; // Stop the button from moving once they say yes
+  try { cheerSound.play(); } catch(e) {}
   heartBurst();
 
-  title.innerText = "Will you be my Valentine? 💖";
+  title.innerText = "I knew it! 😘";
   subtitle.innerText = "";
   yesBtn.style.display = "none";
   noBtn.style.display = "none";
 
   message.innerHTML = `
     <strong>HURRAY!!! 🎉</strong><br><br>
-    I knew it 😘😘😘😘😘<br><br>
     Endless kisses just for you 💋💋💋💋💋<br><br>
     Just you and me.<br>
-    <strong>7:00 PM</strong><br>
-    <strong>THE ROSE GARDEN HOTEL</strong><br><br>
+    <strong>7:00 PM | The Rose Garden Hotel</strong><br><br>
     Can’t wait to be your Valentine 🤍
   `;
 }
 
-function nextStep() {
-  step++;
-  if (step < steps.length) {
-    title.innerText = steps[step].title;
-    subtitle.innerText = steps[step].text;
-    yesBtn.innerText = steps[step].yes;
-    noBtn.innerText = steps[step].no;
-  } else {
-    revealFinal();
+function heartBurst() {
+  for (let i = 0; i < 30; i++) {
+    const heart = document.createElement("div");
+    heart.className = "burst-heart";
+    heart.innerText = "💖";
+    heart.style.left = "50%"; heart.style.top = "50%";
+    heart.style.setProperty("--x", (Math.random() * 400 - 200) + "px");
+    heart.style.setProperty("--y", (Math.random() * 400 - 200) + "px");
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 1200);
   }
 }
 
 function moveButtonAway() {
+  if (!moveEnabled) return;
   const maxX = window.innerWidth - noBtn.offsetWidth;
   const maxY = window.innerHeight - noBtn.offsetHeight;
   noBtn.style.position = "fixed";
@@ -237,24 +192,19 @@ function moveButtonAway() {
 }
 
 noBtn.addEventListener("mouseenter", moveButtonAway);
-noBtn.addEventListener("touchstart", e => {
-  e.preventDefault();
-  moveButtonAway();
-}, { passive: false });
-
+noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveButtonAway(); });
 yesBtn.addEventListener("click", nextStep);
 
 // Background hearts
-const balloonContainer = document.querySelector(".balloon-container");
-for (let i = 0; i < 14; i++) {
-  const heart = document.createElement("div");
-  heart.className = "heart";
-  heart.style.left = Math.random() * window.innerWidth + "px";
-  heart.style.top = Math.random() * window.innerHeight + "px";
-  heart.style.animationDuration = 4 + Math.random() * 4 + "s";
-  balloonContainer.appendChild(heart);
+const bg = document.querySelector(".balloon-container");
+for (let i = 0; i < 15; i++) {
+  const h = document.createElement("div");
+  h.className = "heart";
+  h.style.left = Math.random() * 100 + "%";
+  h.style.top = Math.random() * 100 + "%";
+  h.style.animationDelay = Math.random() * 5 + "s";
+  bg.appendChild(h);
 }
 </script>
-
 </body>
 </html>
