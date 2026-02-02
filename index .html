@@ -1,1 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Valentine Game</title>
 
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #fff0f6;
+  font-family: 'Montserrat', sans-serif;
+  overflow: hidden;
+}
+
+.container {
+  text-align: center;
+  padding: 40px 20px 120px;
+  max-width: 420px;
+  margin: 0 auto;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+h1 {
+  color: #d6336c;
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+p {
+  color: #83003b;
+  font-size: 1.1em;
+  margin-bottom: 30px;
+}
+
+.btns {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+
+button {
+  background: #d6336c;
+  border: none;
+  color: white;
+  font-size: 1em;
+  padding: 14px 36px;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(214,51,108,0.5);
+  transition: background 0.3s ease;
+  min-width: 110px;
+}
+
+button:hover {
+  background: #b23059;
+}
+
+#message {
+  margin-top: 40px;
+  font-size: 1.2em;
+  color: #83003b;
+  min-height: 90px;
+}
+
+.balloon-container {
+  position: fixed;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.heart {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: #d6336c;
+  transform: rotate(-45deg);
+  opacity: 0.7;
+  animation: float 6s ease-in-out infinite;
+}
+
+.heart:before,
+.heart:after {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: #d6336c;
+  border-radius: 50%;
+}
+
+.heart:before {
+  top: 0;
+  left: 15px;
+}
+
+.heart:after {
+  top: 15px;
+  left: 0;
+}
+
+@keyframes float {
+  0% { transform: translateY(0) rotate(-45deg); }
+  50% { transform: translateY(-15px) rotate(-45deg); }
+  100% { transform: translateY(0) rotate(-45deg); }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1 id="title">Hey Sanath 👀</h1>
+  <p id="subtitle">Before you scroll… you have a small game to play.</p>
+
+  <div class="btns">
+    <button id="yesBtn">Start</button>
+    <button id="noBtn">Skip</button>
+  </div>
+
+  <div id="message"></div>
+</div>
+
+<div class="balloon-container"></div>
+
+<script>
+const title = document.getElementById("title");
+const subtitle = document.getElementById("subtitle");
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const message = document.getElementById("message");
+
+let step = 0;
+
+const steps = [
+  {
+    title: "Level 1 💫",
+    text: "Pick one thing that always makes life better:",
+    yes: "Quiet time together",
+    no: "Laughing at silly things"
+  },
+  {
+    title: "Level 2 ❤️",
+    text: "What matters more to you?",
+    yes: "Grand surprises",
+    no: "Time spent together"
+  },
+  {
+    title: "Final Level 💘",
+    text: "One honest question… ready?",
+    yes: "Yes",
+    no: "No 😌"
+  }
+];
+
+function nextStep(choice) {
+  step++;
+  if (step < steps.length) {
+    title.innerText = steps[step].title;
+    subtitle.innerText = steps[step].text;
+    yesBtn.innerText = steps[step].yes;
+    noBtn.innerText = steps[step].no;
+  } else {
+    revealFinal();
+  }
+}
+
+function revealFinal() {
+  title.innerText = "My answer is you 🤍";
+  subtitle.innerText = "";
+  yesBtn.style.display = "none";
+  noBtn.style.display = "none";
+  message.innerHTML = `
+    Will you be my Valentine, Sanath? 🌹<br><br>
+    Just you and me.<br>
+    <strong>7:00 PM</strong><br>
+    <strong>The Rose Garden Hotel</strong><br><br>
+    I already saved the date… 💖
+  `;
+}
+
+// Move NO button
+function moveButtonAway() {
+  const maxX = window.innerWidth - noBtn.offsetWidth;
+  const maxY = window.innerHeight - noBtn.offsetHeight;
+  noBtn.style.position = "fixed";
+  noBtn.style.left = Math.random() * maxX + "px";
+  noBtn.style.top = Math.random() * maxY + "px";
+}
+
+noBtn.addEventListener("mouseenter", moveButtonAway);
+noBtn.addEventListener("touchstart", e => {
+  e.preventDefault();
+  moveButtonAway();
+}, { passive: false });
+
+yesBtn.addEventListener("click", () => nextStep("yes"));
+
+// Hearts
+const balloonContainer = document.querySelector(".balloon-container");
+for (let i = 0; i < 14; i++) {
+  const heart = document.createElement("div");
+  heart.className = "heart";
+  heart.style.left = Math.random() * window.innerWidth + "px";
+  heart.style.top = Math.random() * window.innerHeight + "px";
+  heart.style.animationDuration = 4 + Math.random() * 4 + "s";
+  balloonContainer.appendChild(heart);
+}
+</script>
+
+</body>
+</html>
